@@ -3,30 +3,49 @@ const $ = (element) => document.querySelector(element);
 const $$ = (element) => [...document.querySelectorAll(element)];
 const $itemBox = $('.contents')
 const $title = $('h2')
+let data;
+let obj;
+let music;
+let day = [];
 const option = {
     maximumFractionDigits: 4
 }
 
 
-async function load() {
-    const data = await fetch('./music_data.json');
-    const obj = await data.json();
 
-    const music = { ...obj.data }
+async function load() {
+    try {
+        const response = await fetch('./music_data.json');
+        const data = await response.json();
+        music = data.data; // 직접 music 변수에 저장
+        return music;
+    } catch (error) {
+    }
+}
+
+
+
+async function init() {
+
+
+
+    await load();
+
 
 
     Object.keys(music).forEach((e) => {
         const res = music[e]
 
         let regex = /[^0-9]/g;
-        let price = res.price.replace(regex, "")
+        let price = parseInt(res.price.replace(regex, ""))
         price = price.toLocaleString('en-US')
 
 
         const newMusic = document.createElement('div')
 
+        newMusic.classList.add('col-md-2', 'col-sm-2', 'col-xs-2', 'product-grid');
+
         newMusic.innerHTML = `
-                         <div class="col-md-2 col-sm-2 col-xs-2 product-grid">
                             <div class="product-items">
                                     <div class="project-eff">
                                         <img class="img-responsive" src="images/${res.albumJaketImage}" alt="Time for the moon night">
@@ -39,7 +58,7 @@ async function load() {
                                     </span>
                                     <span>
                                         <i class="fa  fa-calendar"> 발매일</i> 
-                                         
+
                                         <p>${res.release}</p>
                                     </span>
                                     <span>
@@ -53,28 +72,45 @@ async function load() {
                                     </span>
                                 </div>
                             </div>
-                        </div>
         `
 
         $itemBox.appendChild(newMusic)
     })
 
-    const musicPrice = {...document.querySelectorAll(".produ-cost > span:nth-child(3) > p")}
-    let sum
-    Object.keys(musicPrice).forEach((e) =>{
-        let cel = musicPrice[e]
-        cel = cel.innerHTML.toLocaleString('en-US')
-        console.log(cel);
-        cel = parseInt(cel.innerHTML)
-        console.log(cel);
-    })
+    let save = [...document.querySelectorAll('.product-grid')]
+    let rese = $$('.fa-calendar');
+    let array = [];
 
-    
+    function sortFun() {
+        for (let i = 0; i < rese.length - 1; i++) {
+            const before = parseInt(rese[i].nextElementSibling.innerText.replace('.', '').replace('.', ''))
+            const after = parseInt(rese[i + 1].nextElementSibling.innerText.replace('.', '').replace('.', ''))
+            save[i]
 
+
+            for (let j = 0; i < rese.length - 1; j++) {
+                if (after > before) {
+                    const temp = save[i]
+                    $itemBox.removeChild(save[i])
+                    $itemBox.insertBefore(temp, save[i + 1])
+                }
+            }
+
+
+
+        }
+    }
+
+
+
+    sortFun()
 
 }
 
-
+init()
 load()
+
+
+
 
 $title.textContent = "All"
