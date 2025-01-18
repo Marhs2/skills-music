@@ -1,12 +1,14 @@
 let $saveData
 const $ = (element) => document.querySelector(element);
 const $$ = (element) => [...document.querySelectorAll(element)];
-const $itemBox = $('.contents')
-const $title = $('h2')
+const $itemBox = $('.contents');
+const $title = $('h2');
+const $input = $('.form-group .form-control');
+const $searchBtn = $('.form-group .input-group-btn');
 let data;
-let obj;
 let music;
-let day = [];
+
+
 const option = {
     maximumFractionDigits: 4
 }
@@ -30,6 +32,13 @@ async function init() {
 
 
     await load();
+
+    const noResearch = document.createElement('div');
+    noResearch.textContent = "검색된 앨범이 없습니다.";
+    noResearch.style.fontSize = '20px'
+    noResearch.style.display = 'none'
+    $itemBox.appendChild(noResearch);
+
 
 
 
@@ -78,32 +87,46 @@ async function init() {
     })
 
     let save = [...document.querySelectorAll('.product-grid')]
-    let rese = $$('.fa-calendar');
-    let array = [];
-
-    function sortFun() {
-        for (let i = 0; i < rese.length - 1; i++) {
-            const before = parseInt(rese[i].nextElementSibling.innerText.replace('.', '').replace('.', ''))
-            const after = parseInt(rese[i + 1].nextElementSibling.innerText.replace('.', '').replace('.', ''))
-            save[i]
 
 
-            for (let j = 0; i < rese.length - 1; j++) {
-                if (after > before) {
-                    const temp = save[i]
-                    $itemBox.removeChild(save[i])
-                    $itemBox.insertBefore(temp, save[i + 1])
-                }
+    function search() {
+        save.forEach((e) => {
+
+            const title = e.querySelector(".produ-cost h5");
+            const artistName = e.querySelector('.fa-microphone').nextElementSibling;
+
+
+            if (!$input.value.trim()) {
+                noResearch.style.display = ' block'
+                e.style.display = 'none'
+
+            } else if (title.textContent.toLocaleLowerCase().includes($input.value.toLocaleLowerCase()) || artistName.textContent.toLocaleLowerCase().includes($input.value.toLocaleLowerCase())) {
+                e.style.display = "block"
+                noResearch.style.display = ' none'
+            } else {
+                noResearch.style.display = ' block'
+                e.style.display = 'none'
+
             }
 
 
-
-        }
+        })
     }
 
+    $input.addEventListener('keypress', (e) => {
+        e.key === 'Enter' ? search() : '';
+    })
+
+    $searchBtn.addEventListener('click', () => {
+        search()
+    })
 
 
-    sortFun()
+
+
+    // let rese = $$('.fa-calendar');
+    // let array = [];
+
 
 }
 
