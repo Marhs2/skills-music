@@ -90,27 +90,23 @@ async function init() {
 
 
     function search() {
+        const query = $input.value.trim().toLocaleLowerCase();
+        let hasResult = false
         save.forEach((e) => {
 
             const title = e.querySelector(".produ-cost h5");
             const artistName = e.querySelector('.fa-microphone').nextElementSibling;
 
-
-            if (!$input.value.trim()) {
-                noResearch.style.display = ' block'
-                e.style.display = 'none'
-
-            } else if (title.textContent.toLocaleLowerCase().includes($input.value.toLocaleLowerCase()) || artistName.textContent.toLocaleLowerCase().includes($input.value.toLocaleLowerCase())) {
-                e.style.display = "block"
-                noResearch.style.display = ' none'
+            if (query && (title.textContent.toLocaleLowerCase().includes(query) || artistName.textContent.toLocaleLowerCase().includes(query))) {
+                e.style.display = "block";
+                hasResult = true; 
             } else {
-                noResearch.style.display = ' block'
-                e.style.display = 'none'
-
+                e.style.display = "none";
             }
 
 
         })
+        noResearch.style.display = hasResult ? "none" : "block";
     }
 
     $input.addEventListener('keypress', (e) => {
