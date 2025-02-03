@@ -22,8 +22,12 @@ const option = {
     maximumFractionDigits: 4
 }
 
+$mainMenu.querySelector('li:nth-child(3)').remove()
 $title.textContent = "ALL"
 $itemBox.innerHTML = ``
+$shoppingCart.innerHTML = ''
+$cart.innerHTML = `<i class="fa fa-shopping-cart"></i> 쇼핑카트 <strong>0</strong> 개 금액 ￦ 0원 `
+
 
 $music.sort((a, b) => {
     const dataA = new Date(a.release)
@@ -33,15 +37,6 @@ $music.sort((a, b) => {
 })
 
 async function Music() {
-    const noResearch = document.createElement('div');
-    noResearch.textContent = "검색된 앨범이 없습니다.";
-    noResearch.style.fontSize = '20px'
-    noResearch.style.display = 'none'
-    $itemBox.appendChild(noResearch);
-    // $mainMenu.removeChild($mainMenu.querySelector('li:nth-child(3)'))
-
-
-
     $music.forEach((album, idx) => {
         const newMusic = document.createElement('div')
         newMusic.classList.add('col-md-2', 'col-sm-2', 'col-xs-2', 'product-grid');
@@ -49,51 +44,46 @@ async function Music() {
         $itemBox.appendChild(newMusic)
     })
 
-
     function search() {
-        let save = [...document.querySelectorAll('.product-grid')]
+        let Musics = [...document.querySelectorAll('.product-grid')]
         const query = $input.value.trim().toLocaleLowerCase();
+
+        const noResearch = document.createElement('div');
+        noResearch.classList.add('research')
+        noResearch.textContent = "검색된 앨범이 없습니다.";
+        noResearch.style.fontSize = '20px'
+        noResearch.style.display = 'none'
+
+        if (!$itemBox.innerHTML.includes(noResearch.innerHTML)) {
+            $itemBox.appendChild(noResearch)
+        }
+
         let hasResult = false
-        save.forEach((e) => {
+        Musics.forEach((e) => {
 
             const title = e.querySelector(".produ-cost h5");
             const artistName = e.querySelector('.fa-microphone').nextElementSibling;
 
-
             if (query && (title.textContent.toLocaleLowerCase().includes(query) || artistName.textContent.toLocaleLowerCase().includes(query))) {
                 e.style.display = "block";
 
-                const highLightTitleFind = title.textContent.split('').map((text, index) => query.includes(text.toLocaleLowerCase()) ? text : '');
-                const highLightTitle = title.textContent.split('') 
-                let newThingTitle = [];
-                highLightTitle.forEach((text) => {
-                    newThingTitle.push(highLightTitleFind.includes(text) == true ? text.replace(text, `<span style = "background-color: yellow; color:black; display:inline;">${text}</span>`) : `${text}`)
-                })
+                const highlightText = (text, query) => {
+                    const regex = new RegExp(query, 'gi');
+                    return text.replace(regex, match =>
+                        `<span style="background-color: yellow; color:black; display:inline;">${match}</span>`
+                    );
+                };
 
-                const highLightArtistFind = artistName.textContent.split('').map((text, index) => query.includes(text.toLocaleLowerCase()) ? text : '');
-                const highLightArtist= artistName.textContent.split('') 
-                let newThingArtist= [];
-                highLightArtist.forEach((text) => {
-                    newThingArtist.push(highLightArtistFind.includes(text) == true ? text.replace(text, `<span style = "background-color: yellow; color:black; display:inline;">${text}</span>`) : `${text}`)
-                })
+                title.innerHTML = highlightText(title.textContent, query);
+                artistName.innerHTML = highlightText(artistName.textContent, query);
 
-                const artisthightLength = highLightArtistFind.filter((text)=> text && '없음').length
-                const titlethightLength = highLightTitleFind.filter((text)=> text && '없음').length
-
-                console.log(artisthightLength + '아티스트');
-                console.log(titlethightLength + '타이틀');
-                
-                title.innerHTML = newThingTitle.join('')
-                artistName.innerHTML = newThingArtist.join('')
                 hasResult = true;
             } else {
                 e.style.display = "none";
             }
 
         })
-        noResearch.style.display = hasResult ? "none" : "block";
-
-
+        document.querySelector().style.display = hasResult ? "none" : "block";
     }
 
     $input.addEventListener('keyup', (e) => {
@@ -105,7 +95,6 @@ async function Music() {
     })
 }
 
-
 function creatTab() {
     let array = []
     $music.filter((item) => {
@@ -114,7 +103,6 @@ function creatTab() {
         array.push(item.category)
         newTab.innerHTML = `<a href="#"><i class="fa fa-youtube-play fa-2x"></i> <span>${item.category}</span></a>`
         $mainMenu.appendChild(newTab)
-
     });
 }
 
@@ -137,29 +125,7 @@ async function tabFilter() {
                 .join('');
         btns = $$('.btn-xs');
         addCart()
-
-
-
-
-
-        // $music.forEach((res) => {
-        //     if (category == 'ALL') {
-        //         const newMusic = document.createElement('div')
-        //         newMusic.classList.add('col-md-2', 'col-sm-2', 'col-xs-2', 'product-grid');
-        //         newMusic.innerHTML = createItemHtml(res);
-        //         $itemBox.appendChild(newMusic)
-        //         r    eturn;
-        //     }
-        //     if (category == res.category) {
-        //         const newMusic = document.createElement('div')
-        //         newMusic.classList.add('col-md-2', 'col-sm-2', 'col-xs-2', 'product-grid');
-        //         newMusic.innerHTML = createItemHtml(res);
-        //         $itemBox.appendChild(newMusic)
-        //     }
-        // })
-
     })
-
 }
 
 async function addCart() {
@@ -168,8 +134,8 @@ async function addCart() {
             const $objectName = e.target.closest('button').parentNode.parentNode.querySelector('h5').innerText
             const $objectInfo = e.target.closest('button').parentNode.parentNode.querySelectorAll('p')
             const $objectImg = e.target.closest('div').parentNode.querySelector('img')
-            let countSum = 1;
-            let PriceSum = 20000;
+            let countSum = 0;
+            let PriceSum = 0;
 
             if (Object.hasOwn(musicObject, $objectName)) {
                 musicObject[$objectName].count++
@@ -182,10 +148,6 @@ async function addCart() {
                     artist: $objectInfo[0].textContent
                 }
             }
-
-
-
-
             e.target.closest('button').innerHTML = `<i class="fa fa-shopping-cart"></i> 추가하기 (${musicObject[$objectName].count}개)`;
 
             Object.keys(musicObject).forEach((item) => {
@@ -194,7 +156,6 @@ async function addCart() {
                 PriceSum += (parseInt(itemObject.price.replace(/[^0-9]/g, '')) * itemObject.count)
                 $cart.innerHTML = `<i class="fa fa-shopping-cart"></i> 쇼핑카트 <strong>${countSum}</strong> 개 금액 ￦ ${PriceSum.toLocaleString('en-US')}원 `
             })
-
 
             const newItme = document.createElement('tr')
             newItme.innerHTML += `
@@ -216,65 +177,59 @@ async function addCart() {
                 ${$objectInfo[2].textContent}
                 </td>
                 <td class="albumqty">
-                    <input type="number" class="form-control" value="1">
+                    <input type="number" class="form-control" value="1" min='1'>
                 </td>
                 <td class="pricesum">
                     ${$objectInfo[2].textContent}
                 </td>
                 <td>
-                    <button class="btn work-default">
-                        <i class="fa fa-trash-o"></i> 삭제
+                    <button class="btn btn-default">
+                            <i class="fa fa-trash-o"></i> 삭제
                     </button>
                 </td>`
+
             !$shoppingCart.querySelector(`#${e.currentTarget.closest('.product-items').id}`) ? $shoppingCart.appendChild(newItme) : ''
             Object.keys(musicObject).forEach((item) => {
                 const object = musicObject[item]
                 $shoppingCart.querySelector(`#${e.currentTarget.closest('.product-items').id}`).parentNode.querySelector('.albumprice').textContent = object.price
                 $shoppingCart.querySelector(`#${e.currentTarget.closest('.product-items').id}`).parentNode.querySelector('.pricesum').textContent = `₩ ${(parseInt(object.price.replace(/[^0-9]/g, '')) * object.count).toLocaleString('en-US')}`
                 $shoppingCart.querySelector(`#${e.currentTarget.closest('.product-items').id}`).parentNode.querySelector('.form-control').value = object.count
+                document.querySelector('.totalprice span').textContent = `₩${(parseInt(object.price.replace(/[^0-9]/g, '')) * object.count).toLocaleString('en-US')}`
             })
-            cartMange()
 
         });
     });
-
-
 }
-
-
-
-
 
 function cartMange() {
-    const $amounts = $$('.modal .form-control')
     const total = $('.totalprice').querySelector('span')
     let sum = 0;
-    $amounts.forEach((amount) => {
 
-        amount.addEventListener('click', () => {
-            amount.closest('td').nextElementSibling.textContent = `₩ ${(amount.value * parseInt(amount.closest('td').previousElementSibling.textContent.replace(/[^0-9]/g, ''))).toLocaleString('en-US')}`
-            sum = parseInt(amount.closest('td').nextElementSibling.textContent.replace(/[^0-9]/g, ''))
-            total.textContent = sum
+    total.textContent = 0
+
+    function totalChange() {
+        let sum2 = 0;
+        [...$shoppingCart.children].forEach((item) => {
+            sum2 += parseInt(item.querySelector('.pricesum').textContent.replace(/[^0-9]/g, ''))
         })
+
+        sum = sum2
+        total.textContent = `₩${sum.toLocaleString('en-US')}`
+    }
+
+    $shoppingCart.addEventListener('click', () => {
+        totalChange()
     })
-
-
-
-    console.log(total);
 
     $shoppingCart.addEventListener('click', (e) => {
-        if (!e.target.closest('button')) return;
-        e.target.closest('tr').remove()
+        if (!e.target.closest('input')) return;
+        const findPar = e.target.parentNode.parentNode
+        findPar.querySelector('.pricesum').textContent = `₩ ${e.target.closest('input').value * findPar.querySelector('.albumprice').textContent.replace(/[^0-9]/g,'')}`
     })
-
-
 }
 
-console.log($('.btn'));
-
 const createItemHtml = (album, idx) =>
-    `
-    <div class="product-items" id="item${idx}">
+    `    <div class="product-items" id="item${idx}">
             <div class="project-eff">
                 <img class="img-albumponsive" src="images/${album.albumJaketImage}" alt="Time for the moon night">
             </div>
@@ -295,7 +250,11 @@ const createItemHtml = (album, idx) =>
             </span>
             <span class="shopbtn">
                 <button class="btn btn-default btn-xs">
-                    <i class="fa fa-shopping-cart"></i> 카트담기 
+                ${musicObject[album.albumName] ?
+        `<i class="fa fa-shopping-cart"></i> 추가하기 (${musicObject[album.albumName]?.count}개)` :
+        '<i class="fa fa-shopping-cart"></i> 쇼핑카트담기'
+
+    }
                 </button>
             </span>
         </div>
